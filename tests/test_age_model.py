@@ -1,4 +1,4 @@
-from src.predict import AdultorNot, train_and_save_model
+from src.train import AdultorNot, train_and_save_model
 from pathlib import Path
 import joblib
 
