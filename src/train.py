@@ -14,7 +14,7 @@ class AdultorNot:
 
     def predict(self, number: int) -> str:
         pred = self.model.predict([[number]])[0]
-        return "Adult" if number < 18  else "Minor"
+        return "Adult" if number >= 18  else "Minor"
 
 
 def train_and_save_model(model_path: str | Path = "model.pkl") -> Path:
