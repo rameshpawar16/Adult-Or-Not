@@ -1,32 +1,85 @@
-name: Deploy to GitHub Pages
+name: CI/CD - Age Predictor
 
 on:
   push:
-    branches: [ main ]  # or your default branch
+    branches: [ main ]          # change if your default branch is different
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
+# Needed for GitHub Pages deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Avoid overlapping deployments
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  tests:
+    name: Run tests (CI)
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: pytest
+
+  deploy:
+    name: Deploy to GitHub Pages (CD)
+    needs: tests
+    # Only deploy from main branch and when tests succeed
+    if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Pages
+      - name: Generate HTML status page
+        run: |
+          mkdir -p site
+          cat > site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8" />
+              <title>Age Prediction Model</title>
+          </head>
+          <body>
+              <h1>Age Prediction Model</h1>
+              <p>Status: All tests passed ✅</p>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./dist   # or wherever your built site is
+          # This is the folder we just created
+          path: ./site
 
       - name: Deploy to GitHub Pages
         id: deployment
