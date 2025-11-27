@@ -2,18 +2,18 @@ name: CI/CD - Age Predictor
 
 on:
   push:
-    branches: [ main ]          # change if your default branch is different
+    branches: [ main ]          
   pull_request:
     branches: [ main ]
   workflow_dispatch:
 
-# Needed for GitHub Pages deployment
+
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Avoid overlapping deployments
+
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -41,9 +41,9 @@ jobs:
         run: pytest
 
   deploy:
-    name: Deploy to GitHub Pages (CD)
+    name: Deploy (CD)
     needs: tests
-    # Only deploy from main branch and when tests succeed
+
     if: github.ref == 'refs/heads/main' && needs.tests.result == 'success'
     runs-on: ubuntu-latest
 
@@ -67,7 +67,7 @@ jobs:
           </head>
           <body>
               <h1>Age Prediction Model</h1>
-              <p>Status: All tests passed ✅</p>
+              <p>Status: All tests passed </p>
           </body>
           </html>
           EOF
@@ -78,7 +78,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          # This is the folder we just created
+
           path: ./site
 
       - name: Deploy to GitHub Pages
